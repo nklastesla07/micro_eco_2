@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0f17">
+  <meta name="description" content="Dashboard tương tác về tác động của thuế carbon đến doanh nghiệp, thị trường yếu tố sản xuất và tái phân bổ nguồn lực.">
+  <title>Kinh tế vi mô 2 | Thuế carbon và tái phân bổ nguồn lực</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#0b0f17",
+            panel: "#111827",
+            emerald: { 400: "#34d399", 500: "#10b981" },
+            amber: { 400: "#fbbf24", 500: "#f59e0b" },
+            tech: "#3b82f6"
+          },
+          fontFamily: { sans: ["Montserrat", "sans-serif"] }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f17;
+      --surface: #111827;
+      --surface-raised: #151f2d;
+      --line: rgba(148, 163, 184, .14);
+      --muted: #94a3b8;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 84% 2%, rgba(16,185,129,.10), transparent 27rem),
+        radial-gradient(ellipse at 6% 24%, rgba(59,130,246,.07), transparent 28rem),
+        var(--bg);
+      color: #e5e7eb;
+      font-family: "Montserrat", sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    ::selection { background: rgba(16,185,129,.34); color: white; }
+    .shell { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 30; backdrop-filter: blur(18px);
+      background: rgba(11,15,23,.82); border-bottom: 1px solid var(--line);
+    }
+    .nav-link { color: #a9b4c5; transition: color .2s ease; white-space: nowrap; }
+    .nav-link:hover, .nav-link:focus-visible { color: #6ee7b7; }
+    .eyebrow { color: #6ee7b7; font-size: .7rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+    .hero {
+      position: relative; overflow: hidden; border: 1px solid rgba(52,211,153,.18);
+      background: linear-gradient(130deg, rgba(17,24,39,.94), rgba(17,24,39,.64) 54%, rgba(8,47,40,.48));
+      box-shadow: 0 24px 90px rgba(0,0,0,.24);
+    }
+    .hero:after {
+      content: ""; position: absolute; width: 340px; height: 340px; right: -80px; top: -135px;
+      border: 1px solid rgba(52,211,153,.16); border-radius: 50%;
+      box-shadow: 0 0 0 35px rgba(52,211,153,.025), 0 0 0 75px rgba(52,211,153,.02);
+      pointer-events: none;
+    }
+    .panel {
+      background: linear-gradient(145deg, rgba(17,24,39,.96), rgba(15,23,35,.96));
+      border: 1px solid var(--line); border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.14);
+      transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease;
+      transform-style: preserve-3d;
+    }
+    .panel:hover { border-color: rgba(52,211,153,.27); box-shadow: 0 20px 52px rgba(0,0,0,.23); }
+    .stat-glow { text-shadow: 0 0 25px rgba(52,211,153,.22); }
+    .credit-glow { color: #a7f3d0; text-shadow: 0 0 10px rgba(52,211,153,.48), 0 0 24px rgba(52,211,153,.24); animation: credit-pulse 3s ease-in-out infinite; }
+    @keyframes credit-pulse { 50% { text-shadow: 0 0 14px rgba(52,211,153,.72), 0 0 30px rgba(52,211,153,.36); } }
+    .divider { border-color: var(--line); }
+    .section-heading { display: flex; align-items: center; gap: 13px; }
+    .step-number {
+      display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center;
+      border: 1px solid rgba(52,211,153,.35); border-radius: 12px;
+      color: #6ee7b7; background: rgba(16,185,129,.09); font-weight: 800;
+    }
+    .muted { color: var(--muted); }
+    .chip { border: 1px solid var(--line); background: rgba(148,163,184,.06); }
+    .scenario-button, .mode-button {
+      border: 1px solid var(--line); color: #aeb9c8; background: rgba(148,163,184,.05);
+      transition: all .2s ease;
+    }
+    .scenario-button:hover, .mode-button:hover { border-color: rgba(52,211,153,.4); color: #d1fae5; }
+    .scenario-button[aria-pressed="true"] {
+      border-color: rgba(52,211,153,.62); color: #d1fae5;
+      background: rgba(16,185,129,.14); box-shadow: 0 0 20px rgba(16,185,129,.09);
+    }
+    .mode-button[aria-pressed="true"] {
+      border-color: rgba(59,130,246,.6); color: #bfdbfe; background: rgba(59,130,246,.13);
+    }
+    input[type="range"] {
+      width: 100%; height: 7px; border-radius: 999px; outline: none; cursor: pointer;
+      appearance: none; background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; width: 21px; height: 21px; border-radius: 50%;
+      border: 4px solid #0b0f17; background: #6ee7b7; box-shadow: 0 0 0 2px #10b981, 0 0 18px rgba(16,185,129,.5);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 15px; height: 15px; border-radius: 50%; border: 4px solid #0b0f17;
+      background: #6ee7b7; box-shadow: 0 0 0 2px #10b981, 0 0 18px rgba(16,185,129,.5);
+    }
+    .chart-wrap { overflow: hidden; }
+    .chart-svg { width: 100%; height: auto; overflow: visible; }
+    .chart-svg text { font-family: "Montserrat", sans-serif; fill: #94a3b8; font-size: 11px; }
+    .chart-svg .axis { stroke: #475569; stroke-width: 1.2; }
+    .chart-svg .grid { stroke: rgba(148,163,184,.12); stroke-width: 1; }
+    .chart-svg .smooth { transition: d .65s cubic-bezier(.2,.7,.2,1), cx .65s cubic-bezier(.2,.7,.2,1), cy .65s cubic-bezier(.2,.7,.2,1), x1 .65s ease, x2 .65s ease, y1 .65s ease, y2 .65s ease; }
+    .chart-svg .fade-smooth { transition: opacity .35s ease; }
+    .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
+    .table-row + .table-row { border-top: 1px solid var(--line); }
+    .session-panel { display: none; }
+    .session-panel.is-active { display: block; }
+    .step-tab {
+      display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 3px;
+      border: 1px solid var(--line); border-radius: 11px; padding: 9px 10px;
+      background: rgba(148,163,184,.04); color: #8491a4; text-align: left; transition: all .2s ease;
+    }
+    .step-tab span { font-size: 9px; font-weight: 800; letter-spacing: .12em; }
+    .step-tab b { overflow: hidden; max-width: 100%; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .step-tab:hover { border-color: rgba(52,211,153,.35); color: #d1fae5; }
+    .step-tab[aria-current="step"] { border-color: rgba(52,211,153,.58); background: rgba(16,185,129,.12); color: #6ee7b7; }
+    .step-tab[aria-current="step"] b { color: #e2e8f0; }
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .pulse-dot { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(16,185,129,0); } 0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.17); } }
+    .focus-ring:focus-visible { outline: 2px solid #34d399; outline-offset: 4px; }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 28px, 1160px); }
+      .hero:after { opacity: .45; right: -190px; }
+      .section-heading { align-items: flex-start; }
+      .chart-svg text { font-size: 9px; }
+      .step-tab { align-items: center; padding: 8px 2px; }
+      .step-tab b { font-size: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <header class="topbar">
+    <div class="shell flex min-h-[64px] items-center justify-between gap-5">
+      <a class="focus-ring flex items-center gap-3 rounded-lg" href="#dau-trang" aria-label="Về đầu trang">
+        <span class="grid h-9 w-9 place-items-center rounded-xl border border-emerald-400/30 bg-emerald-500/10 text-emerald-300">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 17.5 9.2 12l3.6 3.2L20 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.8 7H20v5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="text-xs font-extrabold tracking-[.12em] text-slate-100">MICRO<span class="text-emerald-400">LAB</span></span>
+      </a>
+      <div class="text-[10px] font-semibold text-slate-400">Báo cáo tương tác</div>
+      <a href="#session-nav" class="focus-ring rounded-full border border-emerald-400/30 px-3 py-2 text-[10px] font-bold text-emerald-300 transition hover:bg-emerald-400/10">Chọn bước</a>
+    </div>
+  </header>
+
+  <main id="dau-trang" class="shell pb-16">
+    <section class="hero mt-8 rounded-[26px] px-6 py-10 sm:px-10 sm:py-14">
+      <div class="relative z-10 max-w-3xl">
+        <div class="eyebrow mb-4 flex items-center gap-2"><span class="pulse-dot h-2 w-2 rounded-full bg-emerald-400"></span> Kinh tế vi mô 2, mô phỏng tương tác</div>
+        <h1 class="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
+          Thuế carbon và <span class="text-emerald-400">sự dịch chuyển</span> nguồn lực
+        </h1>
+        <p class="mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+          Theo dõi chuỗi tác động từ chi phí sản xuất đến thị trường lao động, vốn và trạng thái phân bổ mới giữa ngành phát thải B và ngành xanh G.
+        </p>
+        <div class="mt-7 flex flex-wrap items-center gap-3">
+          <a href="#session-nav" class="focus-ring rounded-xl bg-emerald-500 px-5 py-3 text-xs font-extrabold text-slate-950 shadow-lg shadow-emerald-900/30 transition hover:bg-emerald-400">Khám phá mô phỏng <span aria-hidden="true">↗</span></a>
+          <span class="chip rounded-xl px-4 py-3 text-[11px] text-slate-300">BF, BOF đến thép xanh</span>
+          <span class="chip rounded-xl px-4 py-3 text-[11px] text-slate-300">K, L cố định trong hộp Edgeworth</span>
+        </div>
+      </div>
+      <div class="relative z-10 mt-10 grid max-w-2xl grid-cols-3 gap-3 sm:mt-12">
+        <div class="border-l border-emerald-400/50 pl-3"><div class="text-[10px] uppercase tracking-wider text-slate-500">Kịch bản thuế</div><div class="mt-1 text-lg font-extrabold text-white">3 <span class="text-xs font-medium text-slate-400">mức</span></div></div>
+        <div class="border-l border-blue-400/50 pl-3"><div class="text-[10px] uppercase tracking-wider text-slate-500">Thị trường</div><div class="mt-1 text-lg font-extrabold text-white">2 <span class="text-xs font-medium text-slate-400">yếu tố</span></div></div>
+        <div class="border-l border-amber-400/50 pl-3"><div class="text-[10px] uppercase tracking-wider text-slate-500">Điều khiển</div><div class="mt-1 text-lg font-extrabold text-white">Đồng bộ <span class="text-xs font-medium text-slate-400">biểu đồ</span></div></div>
+      </div>
+    </section>
+
+    <section id="session-nav" class="panel mt-7 scroll-mt-24 p-4 sm:p-5" aria-label="Chọn phần báo cáo">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div><div class="eyebrow">Lộ trình học</div><div class="mt-1 text-xs font-bold text-slate-200"><span id="step-current">Bước 1</span><span class="mx-2 text-slate-600">/</span>5</div></div>
+        <div class="flex gap-2">
+          <button id="step-prev" class="mode-button rounded-lg px-3 py-2 text-[10px] font-bold" type="button">← Trước</button>
+          <button id="step-next" class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-[10px] font-bold text-emerald-200 transition hover:bg-emerald-400/20" type="button">Tiếp →</button>
+        </div>
+      </div>
+      <div class="mt-4 grid grid-cols-5 gap-2" role="group" aria-label="Chọn một bước">
+        <button class="step-tab" type="button" data-step="0" aria-current="step"><span>00</span><b>Giả định</b></button>
+        <button class="step-tab" type="button" data-step="1"><span>01</span><b>Thuế, MC</b></button>
+        <button class="step-tab" type="button" data-step="2"><span>02</span><b>Hòa Phát</b></button>
+        <button class="step-tab" type="button" data-step="3"><span>03</span><b>Yếu tố K, L</b></button>
+        <button class="step-tab" type="button" data-step="4"><span>04</span><b>Edgeworth</b></button>
+      </div>
+    </section>
+
+    <section id="tong-quan" data-session="0" class="session-panel reveal mt-8 scroll-mt-24">
+      <div class="section-heading mb-6">
+        <span class="step-number">00</span>
+        <div><div class="eyebrow">Khung phân tích</div><h2 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">Tổng quan giả định ban đầu</h2></div>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3">
+        <article class="panel p-5">
+          <div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-300">Doanh nghiệp B</span><span class="h-2.5 w-2.5 rounded-full bg-red-400"></span></div>
+          <div class="mt-4 text-2xl font-extrabold text-red-300">Ngành phát thải</div>
+          <p class="mt-2 text-xs leading-6 text-slate-400">Doanh nghiệp thuộc các ngành phát thải khí CO2, chịu tác động trực tiếp từ chi phí carbon trong mô hình.</p>
+        </article>
+        <article class="panel p-5">
+          <div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-300">Doanh nghiệp G</span><span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span></div>
+          <div class="mt-4 text-2xl font-extrabold text-emerald-300">Ngành xanh</div>
+          <p class="mt-2 text-xs leading-6 text-slate-400">Các doanh nghiệp còn lại, tạm gọi là doanh nghiệp xanh, có thể hấp dẫn hơn khi lợi nhuận tương đối của B giảm.</p>
+        </article>
+        <article class="panel p-5">
+          <div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-300">Yếu tố sản xuất</span><span class="text-[10px] font-bold text-blue-300">K, L</span></div>
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-xl border border-blue-400/15 bg-blue-400/5 p-3"><div class="text-[10px] uppercase text-slate-500">K</div><div class="mt-1 text-sm font-bold text-blue-200">Vốn</div></div>
+            <div class="rounded-xl border border-violet-400/15 bg-violet-400/5 p-3"><div class="text-[10px] uppercase text-slate-500">L</div><div class="mt-1 text-sm font-bold text-violet-200">Lao động</div></div>
+          </div>
+          <p class="mt-3 text-[10px] text-slate-500">Tổng nguồn lực toàn nền kinh tế được giả định cố định trong hộp Edgeworth.</p>
+        </article>
+      </div>
+      <div class="panel mt-4 overflow-hidden">
+        <div class="flex flex-wrap items-end justify-between gap-3 border-b divider px-5 py-4">
+          <div><div class="text-xs font-bold text-slate-200">Phân loại mức thuế carbon</div><div class="mt-1 text-[10px] text-slate-500">Ngưỡng theo giả định trong tài liệu KTE401</div></div>
+          <div class="text-[10px] text-slate-500">Đơn vị: USD trên mỗi tấn CO2</div>
+        </div>
+        <div class="grid sm:grid-cols-3">
+          <div class="table-row flex items-center justify-between gap-3 px-5 py-4 sm:border-r divider"><span class="text-xs font-semibold text-slate-300">Thấp</span><span class="rounded-full bg-emerald-400/10 px-3 py-1 text-[11px] font-bold text-emerald-300">Dưới 7,5</span></div>
+          <div class="table-row flex items-center justify-between gap-3 px-5 py-4 sm:border-r divider"><span class="text-xs font-semibold text-slate-300">Vừa phải</span><span class="rounded-full bg-amber-400/10 px-3 py-1 text-[11px] font-bold text-amber-300">7,5 đến 15</span></div>
+          <div class="table-row flex items-center justify-between gap-3 px-5 py-4"><span class="text-xs font-semibold text-slate-300">Cao</span><span class="rounded-full bg-red-400/10 px-3 py-1 text-[11px] font-bold text-red-300">Trên 15</span></div>
+        </div>
+      </div>
+      <div class="mt-4 rounded-2xl border border-blue-400/20 bg-blue-400/[.055] p-5">
+        <div class="flex items-start gap-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-blue-400/10 text-blue-300">i</span>
+          <div>
+            <div class="text-xs font-bold text-blue-200">Vì sao chọn khung thuế này?</div>
+            <p class="mt-2 text-[10px] leading-6 text-slate-300">Báo cáo <i>Viet Nam 2045: Growing Greener</i> của Ngân hàng Thế giới được viện dẫn cho khuyến nghị mức thuế carbon 7,5 đến 15 USD trên mỗi tấn CO2 trong giai đoạn 2026 đến 2030, phối hợp với hệ thống giao dịch phát thải và hạn chế đánh thuế trùng. Ba điểm mô phỏng đại diện cho mức thấp 5 USD, mức nằm trong khoảng khuyến nghị 10 USD, và kịch bản sức chịu đựng cao 75 USD.</p>
+            <a class="mt-2 inline-flex text-[9px] font-semibold text-blue-300 underline decoration-blue-400/30 underline-offset-4 hover:text-blue-200" href="https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099121923104034140" target="_blank" rel="noreferrer">Mở báo cáo Ngân hàng Thế giới ↗</a>
+            <p class="mt-2 text-[9px] leading-5 text-slate-500">Mức 75 USD là kịch bản giả định trong bài tập, không phải khuyến nghị của báo cáo hoặc mức giá CBAM cố định.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="buoc-mot" data-session="1" class="session-panel reveal mt-8 scroll-mt-24">
+      <div class="section-heading mb-6">
+        <span class="step-number">01</span>
+        <div><div class="eyebrow">Từ chính sách đến sản lượng</div><h2 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">Tác động khi áp thuế carbon</h2></div>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-[.9fr_1.1fr]">
+        <article class="panel p-5 sm:p-6">
+          <p class="text-xs leading-7 text-slate-300 sm:text-sm">
+            Thuế carbon làm chi phí năng lượng hóa thạch và đền bù phát thải ↑. Vì vậy, chi phí biên của ngành B tăng. Với điều kiện tối đa hóa lợi nhuận <span class="font-mono text-blue-300">P = MC</span>, đường MC mới giao mức giá P tại sản lượng thấp hơn.
+          </p>
+          <div class="mt-6 flex flex-wrap items-center gap-2">
+            <span class="rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-[11px] font-bold text-amber-200">Tax ↑</span><span class="text-amber-400" aria-hidden="true">→</span>
+            <span class="rounded-lg border border-red-400/20 bg-red-400/5 px-3 py-2 text-[11px] font-bold text-red-200">MC_B ↑</span><span class="text-red-400" aria-hidden="true">→</span>
+            <span class="rounded-lg border border-blue-400/20 bg-blue-400/5 px-3 py-2 text-[11px] font-bold text-blue-200">Q_B ↓</span>
+          </div>
+          <div class="mt-5 rounded-xl border border-blue-400/15 bg-blue-400/[.045] p-4">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-blue-300">Quy tắc lựa chọn sản lượng</div>
+            <div class="mt-2 text-sm font-semibold text-slate-200">Tối đa hóa lợi nhuận tại <span class="text-blue-300">P = MC</span></div>
+            <div class="mt-1 text-[10px] leading-5 text-slate-400">Khi MC dịch lên và giá thị trường không đổi, lượng cân bằng của doanh nghiệp giảm trong mô hình cạnh tranh.</div>
+          </div>
+        </article>
+        <article class="panel chart-wrap p-4 sm:p-5">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div><div class="text-xs font-bold text-slate-200">Đường chi phí biên và giá thị trường</div><div class="mt-1 text-[10px] text-slate-500">Minh họa dịch chuyển MC và sản lượng</div></div>
+            <span class="chip rounded-full px-3 py-1 text-[10px] text-slate-400">Mô hình ngành B</span>
+          </div>
+          <svg class="chart-svg" viewBox="0 0 520 330" role="img" aria-labelledby="mc-title mc-desc">
+            <title id="mc-title">Đồ thị giá và chi phí biên</title>
+            <desc id="mc-desc">Đường chi phí biên dịch lên từ MC1 đến MC2 và lượng cân bằng giảm từ Q1 xuống Q2.</desc>
+            <line class="grid" x1="64" y1="72" x2="480" y2="72"/><line class="grid" x1="64" y1="132" x2="480" y2="132"/><line class="grid" x1="64" y1="192" x2="480" y2="192"/>
+            <line class="axis" x1="64" y1="270" x2="480" y2="270"/><line class="axis" x1="64" y1="270" x2="64" y2="36"/>
+            <text x="468" y="292">Sản lượng Q</text><text x="22" y="45">Giá,</text><text x="22" y="59">chi phí</text>
+            <line id="overview-price-line" x1="64" y1="0" x2="480" y2="0" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6 6"/>
+            <text x="438" y="143" fill="#60a5fa">P = MR</text>
+            <path id="overview-mc-before" class="smooth" d="" fill="none" stroke="#64748b" stroke-width="3"/>
+            <path id="overview-mc-after" class="smooth" d="" fill="none" stroke="#ef4444" stroke-width="3"/>
+            <text id="overview-mc0-label" x="440" y="57" fill="#94a3b8">MC₀</text><text id="overview-mc1-label" x="440" y="37" fill="#f87171">MC₁</text>
+            <line id="overview-q0-guide" class="smooth" x1="0" y1="0" x2="0" y2="270" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4 5"/>
+            <line id="overview-q1-guide" class="smooth" x1="0" y1="0" x2="0" y2="270" stroke="#f87171" stroke-width="1.4" stroke-dasharray="4 5"/>
+            <circle id="overview-q0-point" class="smooth" cx="0" cy="0" r="5" fill="#60a5fa"/>
+            <circle id="overview-q1-point" class="smooth" cx="0" cy="0" r="5" fill="#f87171"/>
+            <text id="overview-q0-label" x="0" y="287" fill="#93c5fd">Q₀</text><text id="overview-q1-label" x="0" y="306" fill="#fca5a5">Q₁</text>
+            <text id="overview-no-output" x="260" y="124" fill="#fca5a5" style="display:none">Không có Q &gt; 0 thỏa P = MC₁</text>
+          </svg>
+          <div class="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-slate-400"><span><i class="legend-dot" style="background:#64748b"></i>Chi phí biên ban đầu</span><span><i class="legend-dot" style="background:#ef4444"></i>Chi phí biên sau thuế</span><span><i class="legend-dot" style="background:#3b82f6"></i>Giá thị trường</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="hpg" data-session="2" class="session-panel reveal mt-8 scroll-mt-24">
+      <div class="section-heading mb-6">
+        <span class="step-number">02</span>
+        <div><div class="eyebrow">Phòng mô phỏng chính</div><h2 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">Mô hình tổng quát và case study Hòa Phát</h2></div>
+      </div>
+
+      <div class="panel mb-4 p-5 sm:p-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="max-w-2xl"><div class="text-xs font-bold text-slate-200">Quyết định sản xuất theo thời hạn</div><p class="mt-1 text-[10px] leading-5 text-slate-500">Chọn góc nhìn để đối chiếu doanh thu với chi phí bình quân sau thuế.</p></div>
+          <div class="flex gap-2" role="group" aria-label="Chọn thời hạn phân tích">
+            <button class="mode-button rounded-lg px-3 py-2 text-[10px] font-bold" type="button" data-mode="short" aria-pressed="true">Ngắn hạn</button>
+            <button class="mode-button rounded-lg px-3 py-2 text-[10px] font-bold" type="button" data-mode="long" aria-pressed="false">Dài hạn</button>
+          </div>
+        </div>
+        <div id="short-theory" class="mt-4 grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-emerald-400/15 bg-emerald-400/[.045] p-4"><div class="text-xs font-bold text-emerald-300">P ≥ AVC<sub>new</sub></div><p class="mt-2 text-[11px] leading-6 text-slate-300">Doanh nghiệp duy trì sản xuất để bù đắp chi phí biến đổi và một phần chi phí cố định.</p></div>
+          <div class="rounded-xl border border-red-400/15 bg-red-400/[.045] p-4"><div class="text-xs font-bold text-red-300">P &lt; AVC<sub>new</sub></div><p class="mt-2 text-[11px] leading-6 text-slate-300">Đóng cửa ngắn hạn dây chuyền có chi phí cao; Q giảm mạnh.</p></div>
+        </div>
+        <div id="long-theory" class="mt-4 hidden grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-emerald-400/15 bg-emerald-400/[.045] p-4"><div class="text-xs font-bold text-emerald-300">P ≥ ATC<sub>new</sub></div><p class="mt-2 text-[11px] leading-6 text-slate-300">Doanh nghiệp hòa vốn hoặc có lãi, tiếp tục bám trụ thị trường.</p></div>
+          <div class="rounded-xl border border-amber-400/15 bg-amber-400/[.045] p-4"><div class="text-xs font-bold text-amber-300">P &lt; ATC<sub>new</sub> kéo dài</div><p class="mt-2 text-[11px] leading-6 text-slate-300">Lỗ dài hạn ⇒ đầu tư công nghệ xanh để hạ ATC<sub>new</sub>.</p></div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 xl:grid-cols-[.72fr_1.28fr]">
+        <div class="space-y-4">
+          <article class="panel p-5">
+            <div class="flex items-center justify-between gap-3"><div><div class="text-xs font-bold text-slate-200">Thông số cơ sở HPG</div><div class="mt-1 text-[10px] text-slate-500">Theo dữ liệu đầu vào của đề bài</div></div><span class="rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1 text-[10px] font-bold text-blue-300">BF, BOF</span></div>
+            <div class="mt-5 grid grid-cols-2 gap-3">
+              <div class="rounded-xl border divider bg-slate-900/55 p-3"><div class="text-[9px] uppercase tracking-wider text-slate-500">Phát thải mỗi năm</div><div class="stat-glow mt-2 text-lg font-extrabold text-emerald-300">23,47 <span class="text-[10px] font-semibold">triệu tấn</span></div><div class="mt-1 text-[9px] text-slate-500">23.474.480 tấn CO2e mỗi năm</div></div>
+              <div class="rounded-xl border divider bg-slate-900/55 p-3"><div class="text-[9px] uppercase tracking-wider text-slate-500">Biên lợi nhuận gộp</div><div class="mt-2 text-lg font-extrabold text-white">13% đến 16%</div><a class="mt-1 inline-block text-[9px] text-blue-300 underline decoration-blue-400/30 underline-offset-4" href="https://doanhnhan.baophapluat.vn/buc-tranh-loi-nhuan-nganh-thep-quy-i-2026-hoa-phat-but-pha-nhom-ton-ma-doi-mat-ap-luc.html" target="_blank" rel="noreferrer">Nguồn: Bức tranh lợi nhuận ngành thép ↗</a></div>
+              <div class="rounded-xl border divider bg-slate-900/55 p-3"><div class="text-[9px] uppercase tracking-wider text-slate-500">Phát thải BF, BOF</div><div class="mt-2 text-lg font-extrabold text-amber-300">1,8 đến 2,0</div><div class="mt-1 text-[9px] text-slate-500">Tấn CO2 trên tấn thép</div></div>
+              <div class="rounded-xl border divider bg-slate-900/55 p-3"><div class="text-[9px] uppercase tracking-wider text-slate-500">Giá thép tham chiếu</div><div class="mt-2 text-lg font-extrabold text-white">500 đến 550</div><div class="mt-1 text-[9px] text-slate-500">USD trên tấn thép</div></div>
+            </div>
+            <div class="mt-4 rounded-xl border border-slate-700/70 bg-slate-950/40 px-3 py-3 text-[10px] leading-5 text-slate-400">Sản lượng tương ứng khoảng 12 đến 13 triệu tấn thép mỗi năm. Số liệu này là đầu vào của bài tập, cần đối chiếu báo cáo doanh nghiệp trước khi dùng cho quyết định thực tế.</div>
+          </article>
+          <article class="panel p-5">
+            <div class="flex items-start justify-between gap-3"><div><div class="text-xs font-bold text-slate-200">Điều khiển thuế carbon</div><div class="mt-1 text-[10px] text-slate-500">Kéo thanh trượt hoặc chọn một kịch bản</div></div><div id="tax-badge" class="rounded-full bg-emerald-400/10 px-3 py-1 text-[10px] font-extrabold text-emerald-300">THẤP</div></div>
+            <div class="mt-5 flex items-baseline justify-between"><label for="tax-slider" class="text-[10px] font-semibold text-slate-400">Mức thuế carbon</label><div class="text-3xl font-extrabold tracking-tight text-white"><span id="tax-value">5</span><span class="ml-1 text-xs font-semibold text-slate-400">USD/tấn CO2</span></div></div>
+            <input id="tax-slider" class="mt-5 focus-ring" type="range" min="0" max="2" step="1" value="0" aria-label="Mức thuế carbon, ba kịch bản">
+            <div class="mt-3 flex justify-between text-[9px] text-slate-500"><span>5 USD</span><span>10 USD</span><span>75 USD</span></div>
+            <div class="mt-4 grid grid-cols-3 gap-2" role="group" aria-label="Chọn kịch bản thuế">
+              <button class="scenario-button rounded-xl px-2 py-3 text-center" data-scenario="0" type="button" aria-pressed="true"><span class="block text-[9px] text-slate-400">Thấp</span><span class="mt-1 block text-xs font-extrabold text-white">5 USD</span></button>
+              <button class="scenario-button rounded-xl px-2 py-3 text-center" data-scenario="1" type="button" aria-pressed="false"><span class="block text-[9px] text-slate-400">Vừa phải</span><span class="mt-1 block text-xs font-extrabold text-white">10 USD</span></button>
+              <button class="scenario-button rounded-xl px-2 py-3 text-center" data-scenario="2" type="button" aria-pressed="false"><span class="block text-[9px] text-slate-400">CBAM, giả định</span><span class="mt-1 block text-xs font-extrabold text-white">75 USD</span></button>
+            </div>
+            <p class="mt-4 text-[9px] leading-5 text-slate-500">75 USD là kịch bản mô phỏng tham chiếu, không phải giá chứng chỉ chính thức hoặc mức cố định của CBAM. <a class="text-blue-300 underline decoration-blue-400/30 underline-offset-4" href="https://netzero2050.vn/cap-nhat-gia-cbam-2026-moi-nhat/" target="_blank" rel="noreferrer">Cập nhật giá CBAM 2026 ↗</a></p>
+          </article>
+        </div>
+
+        <div class="space-y-4">
+          <article class="panel chart-wrap p-4 sm:p-5">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div><div class="text-xs font-bold text-slate-200">Thuế carbon làm dịch chuyển các đường chi phí</div><div class="mt-1 text-[10px] text-slate-500">Mỗi đồ thị dùng trục hoành Q và trục tung chi phí trên một tấn thép</div></div>
+              <div class="rounded-xl border border-slate-700/70 px-3 py-2 text-right"><div class="text-[9px] text-slate-500">Thuế quy đổi trên sản phẩm</div><div class="mt-0.5 text-sm font-extrabold text-amber-300">+<span id="unit-tax">9</span> USD/tấn thép</div></div>
+            </div>
+            <div class="mt-4 grid gap-4 md:grid-cols-2">
+              <div class="rounded-xl border divider bg-slate-950/35 p-3">
+                <div class="mb-2 flex items-center justify-between gap-2"><div class="text-[10px] font-bold text-slate-200">Ngắn hạn</div><span class="text-[8px] text-slate-500">P so với AVC<sub>new</sub></span></div>
+                <svg class="chart-svg" viewBox="0 0 480 290" role="img" aria-labelledby="short-chart-title short-chart-desc">
+                  <title id="short-chart-title">Phân tích ngắn hạn bằng AVC và MC theo sản lượng</title>
+                  <desc id="short-chart-desc">MC có dạng chữ U bất đối xứng, với nhánh giảm thoải mái và nhánh tăng dốc hơn. Thuế làm AVC và MC dịch lên; điều kiện dừng hoạt động là giá thấp hơn AVC mới.</desc>
+                  <g class="grid"><line x1="58" y1="54" x2="445" y2="54"/><line x1="58" y1="102" x2="445" y2="102"/><line x1="58" y1="150" x2="445" y2="150"/><line x1="58" y1="198" x2="445" y2="198"/></g>
+                  <line class="axis" x1="58" y1="235" x2="445" y2="235"/><line class="axis" x1="58" y1="235" x2="58" y2="35"/>
+                  <text x="14" y="39">Chi phí</text><text x="422" y="258">Q</text>
+                  <text x="24" y="58">700</text><text x="24" y="106">600</text><text x="24" y="154">500</text><text x="24" y="202">400</text>
+                  <text x="54" y="251">0</text><text x="235" y="251">50</text><text x="424" y="251">100</text>
+                  <line id="short-price-line" x1="58" y1="0" x2="445" y2="0" stroke="#3b82f6" stroke-width="1.7" stroke-dasharray="6 5"/>
+                  <text id="short-price-label" x="388" y="0" fill="#60a5fa">P = 525</text>
+                  <path id="short-avc-before" class="smooth" d="" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="5 5"/>
+                  <path id="short-avc-after" class="smooth" d="" fill="none" stroke="#34d399" stroke-width="3"/>
+                  <path id="short-mc-before" class="smooth" d="" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 5"/>
+                  <path id="short-mc-after" class="smooth" d="" fill="none" stroke="#ef4444" stroke-width="3"/>
+                  <line id="short-q-guide" class="smooth" x1="0" y1="0" x2="0" y2="235" stroke="#fbbf24" stroke-width="1.3" stroke-dasharray="4 5"/>
+                  <circle id="short-equilibrium" class="smooth" cx="0" cy="0" r="5" fill="#fbbf24" stroke="#0b0f17" stroke-width="2"/>
+                  <text id="short-equilibrium-label" x="0" y="0" fill="#fcd34d">P = MC, Q*</text>
+                  <text id="short-shutdown-note" x="82" y="72" fill="#fca5a5" style="display:none">P &lt; AVCnew ⇒ dừng dây chuyền</text>
+                </svg>
+                <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-slate-500">
+                  <span><i class="legend-dot" style="background:#64748b"></i>AVC₀, nét đứt</span>
+                  <span><i class="legend-dot" style="background:#34d399"></i>AVC<sub>new</sub></span>
+                  <span><i class="legend-dot" style="background:#94a3b8"></i>MC₀, nét đứt</span>
+                  <span><i class="legend-dot" style="background:#ef4444"></i>MC<sub>new</sub></span>
+                  <span><i class="legend-dot" style="background:#3b82f6"></i>P</span>
+                </div>
+              </div>
+              <div class="rounded-xl border divider bg-slate-950/35 p-3">
+                <div class="mb-2 flex items-center justify-between gap-2"><div class="text-[10px] font-bold text-slate-200">Dài hạn</div><span class="text-[8px] text-slate-500">P so với ATC<sub>new</sub></span></div>
+                <svg class="chart-svg" viewBox="0 0 480 290" role="img" aria-labelledby="long-chart-title long-chart-desc">
+                  <title id="long-chart-title">Phân tích dài hạn bằng ATC và MC theo sản lượng</title>
+                  <desc id="long-chart-desc">MC có dạng chữ U bất đối xứng. Thuế làm các đường chi phí dịch lên; so sánh giá P với ATC mới để đánh giá hòa vốn hoặc lỗ dài hạn.</desc>
+                  <g class="grid"><line x1="58" y1="54" x2="445" y2="54"/><line x1="58" y1="102" x2="445" y2="102"/><line x1="58" y1="150" x2="445" y2="150"/><line x1="58" y1="198" x2="445" y2="198"/></g>
+                  <line class="axis" x1="58" y1="235" x2="445" y2="235"/><line class="axis" x1="58" y1="235" x2="58" y2="35"/>
+                  <text x="14" y="39">USD/tấn</text><text x="422" y="258">Q</text>
+                  <text x="24" y="58">700</text><text x="24" y="106">600</text><text x="24" y="154">500</text><text x="24" y="202">400</text>
+                  <text x="54" y="251">0</text><text x="235" y="251">50</text><text x="424" y="251">100</text>
+                  <line id="long-price-line" x1="58" y1="0" x2="445" y2="0" stroke="#3b82f6" stroke-width="1.7" stroke-dasharray="6 5"/>
+                  <text id="long-price-label" x="388" y="0" fill="#60a5fa">P = 525</text>
+                  <path id="long-atc-before" class="smooth" d="" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="5 5"/>
+                  <path id="long-atc-after" class="smooth" d="" fill="none" stroke="#a78bfa" stroke-width="3"/>
+                  <path id="long-mc-before" class="smooth" d="" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5 5"/>
+                  <path id="long-mc-after" class="smooth" d="" fill="none" stroke="#ef4444" stroke-width="3"/>
+                  <line id="long-q-guide" class="smooth" x1="0" y1="0" x2="0" y2="235" stroke="#fbbf24" stroke-width="1.3" stroke-dasharray="4 5"/>
+                  <circle id="long-equilibrium" class="smooth" cx="0" cy="0" r="5" fill="#fbbf24" stroke="#0b0f17" stroke-width="2"/>
+                  <text id="long-equilibrium-label" x="0" y="0" fill="#fcd34d">P = MC, Q*</text>
+                  <text id="long-loss-note" x="82" y="72" fill="#fca5a5" style="display:none">P &lt; ATCnew ⇒ lỗ dài hạn</text>
+                </svg>
+                <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-slate-500">
+                  <span><i class="legend-dot" style="background:#64748b"></i>ATC₀, nét đứt</span>
+                  <span><i class="legend-dot" style="background:#a78bfa"></i>ATC<sub>new</sub></span>
+                  <span><i class="legend-dot" style="background:#94a3b8"></i>MC₀, nét đứt</span>
+                  <span><i class="legend-dot" style="background:#ef4444"></i>MC<sub>new</sub></span>
+                  <span><i class="legend-dot" style="background:#3b82f6"></i>P</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 rounded-lg border border-slate-700/60 bg-slate-950/35 px-3 py-2 text-[9px] leading-5 text-slate-400">
+              Với <span class="font-mono text-slate-300">τₑ = thuế CO2 × 1,8</span>: <span class="font-mono text-slate-300">AVC<sub>new</sub> = AVC₀ + τₑ</span>, <span class="font-mono text-slate-300">ATC<sub>new</sub> = ATC₀ + τₑ</span>, <span class="font-mono text-slate-300">MC<sub>new</sub> = MC₀ + τₑ</span>. Ngắn hạn: <span class="font-mono text-slate-300">P ≥ AVC<sub>new</sub></span> thì sản xuất. Dài hạn: <span class="font-mono text-slate-300">P ≥ ATC<sub>new</sub></span> thì bám trụ.
+            </div>
+            <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div class="rounded-lg bg-slate-950/40 p-2"><div class="text-[9px] text-slate-500">AVC tại Q tham chiếu</div><div id="avc-value" class="mt-1 text-xs font-extrabold text-amber-300">464 USD</div></div>
+              <div class="rounded-lg bg-slate-950/40 p-2"><div class="text-[9px] text-slate-500">ATC tại Q tham chiếu</div><div id="atc-value" class="mt-1 text-xs font-extrabold text-red-300">504 USD</div></div>
+              <div class="rounded-lg bg-slate-950/40 p-2"><div class="text-[9px] text-slate-500">Sản lượng tương đối</div><div id="graph-q-value" class="mt-1 text-xs font-extrabold text-blue-300">97%</div></div>
+            </div>
+          </article>
+          <article class="panel p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3"><div class="text-xs font-bold text-slate-200">Kết quả kịch bản đang chọn</div><span id="scenario-status" class="rounded-full bg-emerald-400/10 px-3 py-1 text-[9px] font-bold text-emerald-300">DUY TRÌ SẢN XUẤT</span></div>
+            <p id="scenario-copy" class="mt-3 text-[11px] leading-6 text-slate-300" aria-live="polite"></p>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <div class="rounded-xl border divider bg-slate-950/40 p-3"><div class="flex justify-between text-[9px] text-slate-500"><span>Chỉ số sản lượng tương đối</span><span id="q-value" class="font-bold text-slate-300">97%</span></div><div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800"><div id="q-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all duration-700" style="width:97%"></div></div><div class="mt-2 text-[9px] text-slate-500">Mốc cơ sở bằng 100%</div></div>
+              <div class="rounded-xl border divider bg-slate-950/40 p-3"><div class="text-[9px] text-slate-500">Hướng điều chỉnh dài hạn</div><div id="technology" class="mt-2 text-[10px] font-bold leading-5 text-emerald-300">Cải tiến hiệu suất năng lượng</div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="mt-4 rounded-xl border border-amber-400/15 bg-amber-400/[.04] px-4 py-3 text-[10px] leading-5 text-slate-400">
+        Đây là mô hình minh họa, không phải dự báo tài chính hay ước tính nghĩa vụ thuế thực tế của HPG. Chi phí carbon dùng cường độ phát thải giả định 1,8 tấn CO2/tấn thép: 5 × 1,8 = 9 USD, 10 × 1,8 = 18 USD, 75 × 1,8 = 135 USD. Tại Q tham chiếu = 55, AVC₀ = 455 USD, ATC₀ = 495 USD; các đường chi phí dịch lên theo mức thuế.
+      </div>
+    </section>
+
+    <section id="yeu-to" data-session="3" class="session-panel reveal mt-8 scroll-mt-24">
+      <div class="section-heading mb-6">
+        <span class="step-number">03</span>
+        <div><div class="eyebrow">Từ sản phẩm sang yếu tố</div><h2 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">Tác động đến thị trường lao động và vốn</h2></div>
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        <div class="panel flex gap-3 p-4"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-400/10 text-violet-300">L</span><div><div class="text-[10px] font-bold text-violet-200">Lao động ngành B</div><p class="mt-1 text-[10px] leading-5 text-slate-400">Qᴮ ↓ ⇒ Lᴮ_D ↓ ⇒ dư cung L ↑, wᴮ có thể ↓.</p><div class="mt-2 text-xs font-extrabold text-violet-300">Chỉ số mô phỏng: <span id="w-value">98%</span></div></div></div>
+        <div class="panel flex gap-3 p-4"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-400/10 text-blue-300">K</span><div><div class="text-[10px] font-bold text-blue-200">Vốn ngành B</div><p class="mt-1 text-[10px] leading-5 text-slate-400">Qᴮ ↓ ⇒ Kᴮ_D ↓ ⇒ vốn nhàn rỗi ↑, giá thuê vốn rᴮ có thể ↓.</p><div class="mt-2 text-xs font-extrabold text-blue-300">Chỉ số mô phỏng: <span id="r-value">98%</span></div></div></div>
+      </div>
+      <article class="panel mt-4 p-4 sm:p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div><div class="text-xs font-bold text-slate-200">Lựa chọn đầu vào của doanh nghiệp B</div><div class="mt-1 text-[10px] text-slate-500">Trước thuế và sau thuế, L và K theo chỉ số giả định (0 đến 100)</div></div>
+          <span id="factor-scenario" class="rounded-full bg-violet-400/10 px-3 py-1 text-[9px] font-bold text-violet-200">THUẾ THẤP</span>
+        </div>
+        <div class="mt-3 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+          <div>
+            <svg id="factor-input-chart" class="chart-svg" viewBox="0 0 480 340" role="img" aria-labelledby="iso-title iso-desc">
+              <title id="iso-title">Đường đẳng lượng và đường đồng phí ngành B</title>
+              <desc id="iso-desc">Đồ thị dùng các đường đẳng lượng dạng hyperbol và các đường đồng phí tiếp xúc với chúng tại điểm lựa chọn. Sau thuế, quy mô sản xuất và lượng đầu vào minh họa giảm.</desc>
+            </svg>
+            <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[9px] text-slate-500">
+              <span><i class="legend-dot" style="background:#34d399"></i>Đường đẳng lượng, Q không đổi</span>
+              <span><i class="legend-dot" style="background:#a78bfa"></i>Nét đứt, đường đồng phí</span>
+              <span>● Trước thuế</span><span>● Sau thuế</span>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
+              <div class="rounded-lg border divider bg-slate-950/40 p-2 text-slate-400">Trước thuế: <span id="factor-before-values" class="font-bold text-slate-200"></span></div>
+              <div class="rounded-lg border border-violet-400/15 bg-violet-400/[.04] p-2 text-slate-300">Sau thuế: <span id="factor-after-values" class="font-bold text-violet-200"></span></div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="rounded-xl border border-violet-400/15 bg-violet-400/[.04] p-4">
+              <div class="text-[10px] font-bold text-violet-200">Điều kiện tối thiểu hóa chi phí</div>
+              <div class="mt-2 font-mono text-sm text-white">MRTS = w / r</div>
+              <p class="mt-2 text-[9px] leading-5 text-slate-400">Tại tiếp điểm, độ dốc đường đẳng lượng bằng tỷ lệ giá các yếu tố. Thuế carbon được tính như chi phí bổ sung gắn với phát thải, không đồng nhất với tiền lương w hay giá thuê vốn r.</p>
+            </div>
+            <div class="rounded-xl border divider bg-slate-950/40 p-4"><div class="text-[10px] font-bold text-slate-300">Hệ quả theo mô hình</div><p class="mt-2 text-[10px] leading-6 text-slate-400">Qᴮ ↓ ⇒ Lᴮ<sub>D</sub> ↓ và Kᴮ<sub>D</sub> ↓; nguồn lực được giải phóng, có thể chuyển sang ngành G.</p></div>
+          </div>
+        </div>
+        <p class="mt-3 border-t divider pt-3 text-[9px] leading-5 text-slate-500">Đồ thị đẳng lượng, đồng phí minh họa lựa chọn đầu vào ở cấp doanh nghiệp. Các chỉ số L, K và điểm lựa chọn trước, sau thuế đều là giả định minh họa, không phải số liệu thực tế. Tác động lên w và r của toàn thị trường là một kết quả riêng, không thể suy ra chỉ bằng cách dịch chuyển đường đồng phí.</p>
+      </article>
+    </section>
+
+    <section id="edgeworth" data-session="4" class="session-panel reveal mt-8 scroll-mt-24">
+      <div class="section-heading mb-6">
+        <span class="step-number">04</span>
+        <div><div class="eyebrow">Cân bằng tổng thể</div><h2 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">Tái phân bổ nguồn lực, hộp Edgeworth</h2></div>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+        <article class="panel chart-wrap p-4 sm:p-6">
+          <div class="flex flex-wrap items-start justify-between gap-3"><div><div class="text-xs font-bold text-slate-200">Hộp Edgeworth trong sản xuất</div><div class="mt-1 text-[10px] text-slate-500">Tổng lao động L và vốn K toàn nền kinh tế cố định</div></div><span class="chip rounded-full px-3 py-1 text-[9px] text-slate-400">Minh họa phân bổ B, G</span></div>
+          <svg class="chart-svg mt-4" viewBox="0 0 720 430" role="img" aria-labelledby="edge-title edge-desc">
+            <title id="edge-title">Hộp Edgeworth cho phân bổ lao động và vốn</title>
+            <desc id="edge-desc">Hai điểm phân bổ trước và sau thuế được thể hiện riêng. Điểm sau thuế dịch về phía ngành G khi mức thuế carbon tăng; các tỷ trọng là giả định minh họa.</desc>
+            <defs>
+              <linearGradient id="box-fill" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ef4444" stop-opacity=".08"/><stop offset=".58" stop-color="#3b82f6" stop-opacity=".025"/><stop offset="1" stop-color="#10b981" stop-opacity=".12"/></linearGradient>
+              <linearGradient id="contract-stroke" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f87171"/><stop offset=".52" stop-color="#60a5fa"/><stop offset="1" stop-color="#34d399"/></linearGradient>
+              <marker id="allocation-arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="none" stroke="#cbd5e1" stroke-width="1.2"/></marker>
+            </defs>
+            <rect x="86" y="42" width="548" height="316" rx="14" fill="url(#box-fill)" stroke="#475569" stroke-width="1.4"/>
+            <line x1="86" y1="358" x2="634" y2="358" stroke="#f87171" stroke-width="1.5"/>
+            <line x1="86" y1="358" x2="86" y2="42" stroke="#f87171" stroke-width="1.5"/>
+            <line x1="634" y1="42" x2="634" y2="358" stroke="#34d399" stroke-width="1.5"/>
+            <line x1="86" y1="42" x2="634" y2="42" stroke="#34d399" stroke-width="1.5"/>
+            <text x="93" y="383" fill="#fca5a5">O_B, gốc ngành B</text>
+            <text x="478" y="30" fill="#6ee7b7">O_G, gốc ngành G</text>
+            <text x="291" y="410">Tổng lao động L cố định</text>
+            <text x="29" y="205" transform="rotate(-90 29 205)">Tổng vốn K cố định</text>
+            <text x="100" y="61" fill="#fca5a5">Ngành B, phát thải</text>
+            <text x="506" y="341" fill="#6ee7b7">Ngành G, xanh</text>
+            <path d="M110 330 C210 310 267 266 333 220 C402 171 467 119 611 67" fill="none" stroke="url(#contract-stroke)" stroke-width="3.5"/>
+            <text x="382" y="155" fill="#c4b5fd">Đường hợp đồng</text>
+            <line id="allocation-transition" class="smooth" x1="210" y1="287" x2="250" y2="276" stroke="#cbd5e1" stroke-width="1.7" stroke-dasharray="5 5" marker-end="url(#allocation-arrowhead)"/>
+            <circle id="allocation-before-halo" cx="210" cy="287" r="13" fill="#94a3b8" fill-opacity=".12"/>
+            <circle id="allocation-before-point" cx="210" cy="287" r="5.5" fill="#94a3b8" stroke="#e2e8f0" stroke-width="1.5"/>
+            <text id="allocation-before-label" x="199" y="265" text-anchor="end" fill="#cbd5e1">Trước thuế, B 80%, G 20%</text>
+            <line id="allocation-guide-v" class="smooth" x1="0" y1="0" x2="0" y2="358" stroke="#cbd5e1" stroke-opacity=".48" stroke-width="1.2" stroke-dasharray="4 5"/>
+            <line id="allocation-guide-h" class="smooth" x1="86" y1="0" x2="0" y2="0" stroke="#cbd5e1" stroke-opacity=".48" stroke-width="1.2" stroke-dasharray="4 5"/>
+            <circle id="allocation-halo" class="smooth" cx="0" cy="0" r="15" fill="#10b981" fill-opacity=".12"/>
+            <circle id="allocation-point" class="smooth" cx="0" cy="0" r="6" fill="#6ee7b7" stroke="#ecfdf5" stroke-width="2"/>
+            <text id="allocation-label" x="0" y="0" fill="#d1fae5">Sau thuế</text>
+            <text x="91" y="347" fill="#94a3b8">0</text><text x="615" y="347" fill="#94a3b8">Tổng L</text>
+          </svg>
+        </article>
+        <div class="space-y-4">
+          <article class="panel p-5">
+            <div class="text-xs font-bold text-slate-200">Cách đọc sự dịch chuyển</div>
+            <div class="mt-4 space-y-4">
+              <div class="flex gap-3"><span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-red-400/10 text-[10px] font-bold text-red-300">B</span><p class="text-[10px] leading-5 text-slate-400">Lợi nhuận ngành phát thải giảm, doanh nghiệp B thu hẹp quy mô và giải phóng một phần lao động cùng vốn.</p></div>
+              <div class="flex gap-3"><span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-emerald-400/10 text-[10px] font-bold text-emerald-300">G</span><p class="text-[10px] leading-5 text-slate-400">Nếu ngành xanh hấp dẫn hơn và có khả năng tiếp nhận nguồn lực, lao động và vốn dần chuyển sang ngành G.</p></div>
+              <div class="flex gap-3"><span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-blue-400/10 text-[10px] font-bold text-blue-300">↗</span><p class="text-[10px] leading-5 text-slate-400">Điểm minh họa di chuyển trên đường hợp đồng. Vị trí cân bằng thực tế cần thông tin về công nghệ và đường đẳng lượng của mỗi ngành.</p></div>
+            </div>
+          </article>
+          <article class="panel p-5">
+            <div class="flex items-center justify-between"><div class="text-xs font-bold text-slate-200">Phân bổ nguồn lực minh họa</div><span id="edge-scenario" class="text-[9px] font-bold uppercase tracking-wider text-emerald-300">Thuế thấp</span></div>
+            <div class="mt-4 space-y-4">
+              <div><div class="flex justify-between text-[10px]"><span class="text-red-300">Ngành B, phần nguồn lực</span><span id="b-share" class="font-bold text-slate-200">72%</span></div><div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-800"><div id="b-share-bar" class="h-full rounded-full bg-red-400 transition-all duration-700" style="width:72%"></div></div></div>
+              <div><div class="flex justify-between text-[10px]"><span class="text-emerald-300">Ngành G, phần nguồn lực</span><span id="g-share" class="font-bold text-slate-200">28%</span></div><div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-800"><div id="g-share-bar" class="h-full rounded-full bg-emerald-400 transition-all duration-700" style="width:28%"></div></div></div>
+            </div>
+            <p class="mt-4 border-t divider pt-3 text-[9px] leading-5 text-slate-500">Trước thuế: B 80%, G 20%. Tỷ trọng sau thuế và tọa độ hai điểm đều là giả định minh họa, không phải số liệu đo lường hoặc kết quả ước lượng thực nghiệm.</p>
+          </article>
+        </div>
+      </div>
+      <div class="mt-4 rounded-2xl border border-emerald-400/20 bg-gradient-to-r from-emerald-500/[.09] to-blue-500/[.06] p-5 sm:p-6">
+        <div class="eyebrow">Kết luận tổng quan</div>
+        <p class="mt-2 max-w-4xl text-sm font-semibold leading-7 text-slate-100">Thuế carbon thúc đẩy lao động và vốn dịch chuyển từ ngành ô nhiễm sang ngành xanh, qua đó có thể thiết lập trạng thái cân bằng tổng thể mới cho nền kinh tế.</p>
+      </div>
+    </section>
+
+    <footer class="mt-14 border-t divider pt-6">
+      <div>
+          <div class="text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Nguồn và lưu ý phương pháp</div>
+          <p class="mt-2 max-w-3xl text-[9px] leading-5 text-slate-500">Số liệu HPG cùng các điểm thuế là dữ liệu mang tính tương đối, có thể chênh lệch nhỏ so với tỷ giá thay đổi mỗi ngày. Các đồ thị và tỷ trọng phân bổ là mô phỏng có tính minh họa, không thay thế số liệu báo cáo.</p>
+          <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[9px]">
+            <a class="nav-link underline decoration-slate-700 underline-offset-4" href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en" target="_blank" rel="noreferrer">Cơ chế CBAM, Ủy ban châu Âu</a>
+            <a class="nav-link underline decoration-slate-700 underline-offset-4" href="https://netzero2050.vn/cap-nhat-gia-cbam-2026-moi-nhat/" target="_blank" rel="noreferrer">Cập nhật giá chứng chỉ CBAM 2026</a>
+            <a class="nav-link underline decoration-slate-700 underline-offset-4" href="https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf" target="_blank" rel="noreferrer">Báo cáo phát triển bền vững Hòa Phát 2025</a>
+            <a class="nav-link underline decoration-slate-700 underline-offset-4" href="https://doanhnhan.baophapluat.vn/buc-tranh-loi-nhuan-nganh-thep-quy-i-2026-hoa-phat-but-pha-nhom-ton-ma-doi-mat-ap-luc.html" target="_blank" rel="noreferrer">Biên lợi nhuận ngành thép, quý I 2026</a>
+          </div>
+      </div>
+      <div class="mt-6 overflow-x-auto border-t divider pt-4 text-center">
+        <p class="credit-glow inline-flex min-w-max items-center gap-2 whitespace-nowrap text-[8px] font-bold tracking-wide sm:gap-3 sm:text-[10px]">
+          <span>Sản phẩm nhóm 2</span><span aria-hidden="true">·</span>
+          <span>Kinh tế Vi mô 2</span><span aria-hidden="true">·</span>
+          <span>Thực hiện chính: Phạm Vân Anh</span>
+        </p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const scenarios = [
+        {
+          tax: 5, taxSteel: 9, q: 97, wage: 98, rent: 98,
+          bShare: 72, label: "Thấp", status: "DUY TRÌ SẢN XUẤT",
+          color: "#34d399", demandShift: 8, shiftCopy: "Dịch chuyển nhẹ",
+          technology: "Cải tiến hiệu suất năng lượng",
+          copy: "ΔC = 5 × 1,8 = 9 USD/tấn thép, < 2% P. P > AVC_new ⇒ Q gần ổn định; lợi nhuận gộp ↓ nhẹ ⇒ cải tiến hiệu suất năng lượng."
+        },
+        {
+          tax: 10, taxSteel: 18, q: 91, wage: 92, rent: 93,
+          bShare: 55, label: "Vừa phải", status: "SẢN LƯỢNG GIẢM NHẸ",
+          color: "#fbbf24", demandShift: 38, shiftCopy: "Dịch chuyển vừa phải",
+          technology: "Tận dụng nhiệt dư, tăng thép phế liệu",
+          copy: "ΔC = 10 × 1,8 = 18 USD/tấn thép, khoảng 20% đến 30% biên lợi nhuận gộp theo giả định. P > AVC_new ⇒ tiếp tục sản xuất, Q ↓ nhẹ ở lò cũ. ATC_new tiến gần P ⇒ tận dụng nhiệt dư, tăng thép phế liệu."
+        },
+        {
+          tax: 75, taxSteel: 135, q: 48, wage: 62, rent: 66,
+          bShare: 15, label: "CBAM, mô phỏng", status: "ĐÓNG CỬA LÒ CŨ",
+          color: "#f87171", demandShift: 92, shiftCopy: "Dịch chuyển mạnh",
+          technology: "Lò hồ quang điện hoặc thép xanh Hydrogen",
+          copy: "ΔC = 75 × 1,8 = 135 USD/tấn thép. P < AVC_new ⇒ đóng cửa ngắn hạn lò cũ, Q ↓ mạnh. P < ATC_new kéo dài ⇒ chuyển đổi sang lò hồ quang điện (EAF) hoặc thép xanh Hydrogen."
+        }
+      ];
+      const slider = document.getElementById("tax-slider");
+      const number = value => new Intl.NumberFormat("vi-VN").format(value);
+      const setText = (id, value) => { document.getElementById(id).textContent = value; };
+      const curvePoints = (fn, from, to, step, mapX, mapY, minY = null, maxY = null) => {
+        const segments = [];
+        let drawing = false;
+        for (let q = from; q <= to; q += step) {
+          const y = fn(q);
+          if ((minY !== null && y < minY) || (maxY !== null && y > maxY)) {
+            drawing = false;
+            continue;
+          }
+          segments.push(`${drawing ? "L" : "M"} ${mapX(q).toFixed(1)} ${mapY(y).toFixed(1)}`);
+          drawing = true;
+        }
+        return segments.join(" ");
+      };
+      const qx = q => 58 + q * 3.87;
+      const costY = value => 235 - (value - 350) / 350 * 168;
+      const rawMcBase = q => 365 + (q < 35
+        ? .31 * (35 - q) ** 1.55
+        : .25 * (q - 35) ** 1.65);
+      const integrate = (fn, upper) => {
+        const steps = 120;
+        const width = upper / steps;
+        let total = fn(0) + fn(upper);
+        for (let step = 1; step < steps; step += 1) {
+          total += (step % 2 === 0 ? 2 : 4) * fn(step * width);
+        }
+        return total * width / 3;
+      };
+      const mcAdjustment = 455 - integrate(rawMcBase, 55) / 55;
+      const mcBase = q => rawMcBase(q) + mcAdjustment;
+      const avcBase = q => integrate(mcBase, q) / q;
+      const atcBase = q => avcBase(q) + 2200 / q;
+      const inputAllocations = [
+        { labor: 57, capital: 48 },
+        { labor: 46, capital: 40 },
+        { labor: 30, capital: 25 }
+      ];
+
+      function svgNode(tag, attributes = {}, text = "") {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, String(value)));
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      function drawFactorInputChart(item, index) {
+        const svg = document.getElementById("factor-input-chart");
+        const title = svg.querySelector("title");
+        const description = svg.querySelector("desc");
+        svg.replaceChildren(title, description);
+        const left = 55;
+        const top = 20;
+        const right = 460;
+        const bottom = 295;
+        const plotWidth = right - left;
+        const plotHeight = bottom - top;
+        const x = labor => left + labor / 100 * plotWidth;
+        const y = capital => bottom - capital / 100 * plotHeight;
+        const axisColor = "#94a3b8";
+        const mutedColor = "#64748b";
+        const activeColor = index === 2 ? "#34d399" : "#a78bfa";
+
+        svg.append(
+          svgNode("line", { x1: left, y1: top, x2: left, y2: bottom, stroke: axisColor, "stroke-width": 1.4 }),
+          svgNode("line", { x1: left, y1: bottom, x2: right, y2: bottom, stroke: axisColor, "stroke-width": 1.4 }),
+          svgNode("text", { x: right, y: bottom + 19, "text-anchor": "end", "font-size": 10, fill: axisColor }, "Lao động L →"),
+          svgNode("text", { x: left, y: top - 4, "font-size": 10, fill: axisColor }, "Vốn K ↑"),
+          svgNode("text", { x: right - 2, y: top + 14, "text-anchor": "end", "font-size": 8.5, fill: mutedColor }, "Các đường tiếp xúc, sơ đồ khái niệm")
+        );
+
+        const initial = { labor: 78, capital: 72 };
+        const current = inputAllocations[index];
+        const allocations = [initial, current];
+        const drawAllocation = (allocation, isCurrent) => {
+          const color = isCurrent ? activeColor : mutedColor;
+          const isoquantLevel = allocation.labor * allocation.capital;
+          let isoquant = "";
+          for (let labor = isoquantLevel / 100; labor <= 100; labor += 1) {
+            const capital = isoquantLevel / labor;
+            isoquant += `${isoquant ? "L" : "M"}${x(labor).toFixed(1)},${y(capital).toFixed(1)} `;
+          }
+          svg.appendChild(svgNode("path", {
+            d: isoquant.trim(),
+            fill: "none",
+            stroke: isCurrent ? "#34d399" : "#64748b",
+            "stroke-width": 2.5,
+            "stroke-linecap": "round"
+          }));
+
+          const intercept = 2 * allocation.capital;
+          const slope = allocation.capital / allocation.labor;
+          const startLabor = Math.max(0, (intercept - 100) / slope);
+          const endLabor = Math.min(100, intercept / slope);
+          const startCapital = intercept - slope * startLabor;
+          const endCapital = intercept - slope * endLabor;
+          svg.appendChild(svgNode("path", {
+            d: `M${x(startLabor)},${y(startCapital)} L${x(endLabor)},${y(endCapital)}`,
+            fill: "none",
+            stroke: isCurrent ? "#a78bfa" : "#64748b",
+            "stroke-width": 2,
+            "stroke-dasharray": "7 5"
+          }));
+
+          const px = x(allocation.labor);
+          const py = y(allocation.capital);
+          svg.append(
+            svgNode("circle", { cx: px, cy: py, r: 4.5, fill: color, stroke: "#111827", "stroke-width": 1.5 }),
+            svgNode("line", { x1: px, y1: py, x2: px, y2: bottom, stroke: color, "stroke-width": 1, "stroke-dasharray": "3 4" }),
+            svgNode("line", { x1: px, y1: py, x2: left, y2: py, stroke: color, "stroke-width": 1, "stroke-dasharray": "3 4" }),
+            svgNode("text", { x: px, y: bottom + 13, "text-anchor": "middle", "font-size": 9, "font-weight": 700, fill: color }, `${isCurrent ? "Lᴮ₁" : "Lᴮ₀"} ${allocation.labor}`),
+            svgNode("text", { x: left - 5, y: py + 3, "text-anchor": "end", "font-size": 9, "font-weight": 700, fill: color }, `${isCurrent ? "Kᴮ₁" : "Kᴮ₀"} ${allocation.capital}`)
+          );
+          const labelX = isCurrent ? Math.min(px + 10, right - 95) : Math.max(left + 8, px - 10);
+          const labelY = Math.max(top + 24, py + (isCurrent ? -10 : 18));
+          svg.appendChild(svgNode("text", {
+            x: labelX,
+            y: labelY,
+            "text-anchor": isCurrent ? "start" : "end",
+            "font-size": 9,
+            "font-weight": 700,
+            fill: color,
+            class: "chart-label"
+          }, isCurrent ? "Sau thuế, Q ↓" : "Ban đầu, Q₀"));
+        };
+        allocations.forEach((allocation, allocationIndex) => drawAllocation(allocation, allocationIndex === 1));
+        setText("factor-before-values", `Lᴮ₀ ${initial.labor}, Kᴮ₀ ${initial.capital}`);
+        setText("factor-after-values", `Lᴮ₁ ${current.labor}, Kᴮ₁ ${current.capital}`);
+        setText("factor-scenario", `THUẾ ${item.label.toLocaleUpperCase("vi-VN")}`);
+        document.getElementById("factor-scenario").style.color = item.color;
+      }
+
+      function drawOverviewMc(index) {
+        const x = q => 64 + q * 4.16;
+        const y = cost => 270 - cost * 2.34;
+        const minimumQ = 30;
+        const minimumCost = 25;
+        const baseMc = q => minimumCost + (q < minimumQ
+          ? .28 * (minimumQ - q) ** 1.25
+          : .014 * (q - minimumQ) ** 1.9);
+        const price = 50;
+        const shifts = [3, 8, 28];
+        const shift = shifts[index];
+        const pathFor = fn => {
+          const points = [];
+          for (let q = 0; q <= 100; q += .5) {
+            points.push(`${points.length ? "L" : "M"}${x(q).toFixed(1)},${y(fn(q)).toFixed(1)}`);
+          }
+          return points.join(" ");
+        };
+        document.getElementById("overview-mc-before").setAttribute("d", pathFor(baseMc));
+        document.getElementById("overview-mc-after").setAttribute("d", pathFor(q => baseMc(q) + shift));
+        const priceY = y(price);
+        const priceLine = document.getElementById("overview-price-line");
+        priceLine.setAttribute("y1", String(priceY));
+        priceLine.setAttribute("y2", String(priceY));
+        const equilibriumOnRisingBranch = verticalShift => {
+          if (baseMc(minimumQ) + verticalShift >= price) return null;
+          let lower = minimumQ;
+          let upper = 100;
+          for (let iteration = 0; iteration < 40; iteration += 1) {
+            const middle = (lower + upper) / 2;
+            if (baseMc(middle) + verticalShift < price) lower = middle;
+            else upper = middle;
+          }
+          return (lower + upper) / 2;
+        };
+        const q0 = equilibriumOnRisingBranch(0);
+        const point0 = document.getElementById("overview-q0-point");
+        const guide0 = document.getElementById("overview-q0-guide");
+        const label0 = document.getElementById("overview-q0-label");
+        if (q0 === null) {
+          point0.style.display = "none";
+          guide0.style.display = "none";
+          label0.style.display = "none";
+        } else {
+          point0.style.display = "block";
+          point0.setAttribute("cx", String(x(q0)));
+          point0.setAttribute("cy", String(priceY));
+          guide0.style.display = "block";
+          guide0.setAttribute("x1", String(x(q0)));
+          guide0.setAttribute("x2", String(x(q0)));
+          guide0.setAttribute("y1", String(priceY));
+          label0.style.display = "block";
+          label0.setAttribute("x", String(x(q0)));
+          label0.setAttribute("text-anchor", "middle");
+        }
+        const q1 = equilibriumOnRisingBranch(shift);
+        const point1 = document.getElementById("overview-q1-point");
+        const guide1 = document.getElementById("overview-q1-guide");
+        const label1 = document.getElementById("overview-q1-label");
+        const noOutput = document.getElementById("overview-no-output");
+        if (q1 === null) {
+          point1.style.display = "none";
+          guide1.style.display = "none";
+          label1.style.display = "none";
+          noOutput.style.display = "block";
+        } else {
+          point1.style.display = "block";
+          point1.setAttribute("cx", String(x(q1)));
+          point1.setAttribute("cy", String(priceY));
+          guide1.style.display = "block";
+          guide1.setAttribute("x1", String(x(q1)));
+          guide1.setAttribute("x2", String(x(q1)));
+          guide1.setAttribute("y1", String(priceY));
+          label1.style.display = "block";
+          label1.setAttribute("x", String(x(q1)));
+          label1.setAttribute("text-anchor", "middle");
+          noOutput.style.display = "none";
+        }
+        const mc0Label = document.getElementById("overview-mc0-label");
+        const mc1Label = document.getElementById("overview-mc1-label");
+        mc0Label.setAttribute("y", String(y(baseMc(92)) - 7));
+        mc1Label.setAttribute("y", String(y(baseMc(92) + shift) + 15));
+      }
+
+      function updateCostGraphs(item, index) {
+        const tax = item.taxSteel;
+        const setPath = (id, fn, from, to, step, mapY, minY = null, maxY = null) => {
+          document.getElementById(id).setAttribute("d", curvePoints(fn, from, to, step, qx, mapY, minY, maxY));
+        };
+        const lowerCost = 350;
+        const upperCost = 700;
+        setPath("short-avc-before", avcBase, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("short-avc-after", q => avcBase(q) + tax, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("short-mc-before", mcBase, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("short-mc-after", q => mcBase(q) + tax, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("long-atc-before", atcBase, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("long-atc-after", q => atcBase(q) + tax, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("long-mc-before", mcBase, 10, 100, 1, costY, lowerCost, upperCost);
+        setPath("long-mc-after", q => mcBase(q) + tax, 10, 100, 1, costY, lowerCost, upperCost);
+        const priceY = costY(525);
+        for (const prefix of ["short", "long"]) {
+          document.getElementById(`${prefix}-price-line`).setAttribute("y1", String(priceY));
+          document.getElementById(`${prefix}-price-line`).setAttribute("y2", String(priceY));
+          document.getElementById(`${prefix}-price-label`).setAttribute("y", String(priceY - 6));
+        }
+        let equilibriumQ = null;
+        const mcMinimumQuantity = 35;
+        if (mcBase(mcMinimumQuantity) + tax < 525) {
+          let lower = mcMinimumQuantity;
+          let upper = 100;
+          for (let iteration = 0; iteration < 40; iteration += 1) {
+            const middle = (lower + upper) / 2;
+            if (mcBase(middle) + tax < 525) lower = middle;
+            else upper = middle;
+          }
+          equilibriumQ = (lower + upper) / 2;
+        }
+        for (const prefix of ["short", "long"]) {
+          const point = document.getElementById(`${prefix}-equilibrium`);
+          const guide = document.getElementById(`${prefix}-q-guide`);
+          const label = document.getElementById(`${prefix}-equilibrium-label`);
+          if (equilibriumQ === null) {
+            point.style.display = "none";
+            guide.style.display = "none";
+            label.style.display = "none";
+          } else {
+            const x = qx(equilibriumQ);
+            point.style.display = "block";
+            point.setAttribute("cx", String(x));
+            point.setAttribute("cy", String(priceY));
+            guide.style.display = "block";
+            guide.setAttribute("x1", String(x));
+            guide.setAttribute("x2", String(x));
+            guide.setAttribute("y1", String(priceY));
+            guide.setAttribute("y2", "235");
+            label.style.display = "block";
+            label.setAttribute("x", String(Math.max(78, x - 36)));
+            label.setAttribute("y", String(priceY - 10));
+          }
+        }
+        document.getElementById("short-shutdown-note").style.display =
+          525 < avcBase(55) + tax ? "block" : "none";
+        document.getElementById("long-loss-note").style.display =
+          525 < atcBase(55) + tax ? "block" : "none";
+      }
+
+      function updateInputChoice(item, index) {
+        drawFactorInputChart(item, index);
+      }
+
+      function update(index) {
+        const item = scenarios[index];
+        slider.value = String(index);
+        document.querySelectorAll("[data-scenario]").forEach(button => {
+          button.setAttribute("aria-pressed", String(Number(button.dataset.scenario) === index));
+        });
+        document.querySelectorAll("[data-mode]").forEach(button => {
+          button.setAttribute("aria-pressed", String(button.dataset.mode === "short" ? !document.getElementById("long-theory").classList.contains("active-mode") : document.getElementById("long-theory").classList.contains("active-mode")));
+        });
+        setText("tax-value", number(item.tax));
+        setText("tax-badge", item.label.toLocaleUpperCase("vi-VN"));
+        setText("unit-tax", number(item.taxSteel));
+        const referenceQuantity = 55;
+        const referenceAvc = Math.round(avcBase(referenceQuantity) + item.taxSteel);
+        const referenceAtc = Math.round(atcBase(referenceQuantity) + item.taxSteel);
+        setText("avc-value", `${number(referenceAvc)} USD`);
+        setText("atc-value", `${number(referenceAtc)} USD`);
+        setText("q-value", `${item.q}%`);
+        setText("graph-q-value", `${item.q}%`);
+        setText("w-value", `${item.wage}%`);
+        setText("r-value", `${item.rent}%`);
+        setText("scenario-status", item.status);
+        setText("scenario-copy", item.copy);
+        setText("technology", item.technology);
+        setText("edge-scenario", `Thuế ${item.label}`);
+        setText("b-share", `${item.bShare}%`);
+        setText("g-share", `${100 - item.bShare}%`);
+        document.getElementById("q-bar").style.width = `${item.q}%`;
+        document.getElementById("b-share-bar").style.width = `${item.bShare}%`;
+        document.getElementById("g-share-bar").style.width = `${100 - item.bShare}%`;
+        document.getElementById("tax-badge").style.color = item.color;
+        document.getElementById("scenario-status").style.color = item.color;
+        document.getElementById("scenario-status").style.backgroundColor = `${item.color}1a`;
+
+        drawOverviewMc(index);
+        updateCostGraphs(item, index);
+        updateInputChoice(item, index);
+        const beforeT = .2;
+        const t = (100 - item.bShare) / 100;
+        const beforeX = 110 + beforeT * 501;
+        const beforeY = 330 - 263 * beforeT + 17 * Math.sin(Math.PI * beforeT);
+        const edgeX = 110 + t * 501;
+        const edgeY = 330 - 263 * t + 17 * Math.sin(Math.PI * t);
+        [["allocation-point", 6], ["allocation-halo", 15]].forEach(([id]) => {
+          document.getElementById(id).setAttribute("cx", String(edgeX));
+          document.getElementById(id).setAttribute("cy", String(edgeY));
+        });
+        document.getElementById("allocation-guide-v").setAttribute("x1", String(edgeX));
+        document.getElementById("allocation-guide-v").setAttribute("x2", String(edgeX));
+        document.getElementById("allocation-guide-h").setAttribute("y1", String(edgeY));
+        document.getElementById("allocation-guide-h").setAttribute("y2", String(edgeY));
+        const transition = document.getElementById("allocation-transition");
+        transition.setAttribute("x1", String(beforeX));
+        transition.setAttribute("y1", String(beforeY));
+        transition.setAttribute("x2", String(edgeX));
+        transition.setAttribute("y2", String(edgeY));
+        const beforePoint = document.getElementById("allocation-before-point");
+        const beforeHalo = document.getElementById("allocation-before-halo");
+        [beforePoint, beforeHalo].forEach(point => {
+          point.setAttribute("cx", String(beforeX));
+          point.setAttribute("cy", String(beforeY));
+        });
+        const beforeLabel = document.getElementById("allocation-before-label");
+        beforeLabel.setAttribute("x", String(beforeX - 10));
+        beforeLabel.setAttribute("y", String(beforeY - 20));
+        const edgeLabel = document.getElementById("allocation-label");
+        edgeLabel.setAttribute("x", String(Math.min(edgeX + 12, 510)));
+        edgeLabel.setAttribute("y", String(edgeY - 14));
+        edgeLabel.textContent = `Sau thuế: B ${item.bShare}%, G ${100 - item.bShare}%`;
+        edgeLabel.setAttribute("fill", item.color);
+        document.getElementById("allocation-point").setAttribute("fill", item.color);
+        document.getElementById("allocation-halo").setAttribute("fill", item.color);
+        document.getElementById("edge-scenario").style.color = item.color;
+      }
+
+      slider.addEventListener("input", event => update(Number(event.currentTarget.value)));
+      document.querySelectorAll("[data-scenario]").forEach(button => {
+        button.addEventListener("click", () => update(Number(button.dataset.scenario)));
+      });
+      document.querySelectorAll("[data-mode]").forEach(button => {
+        button.addEventListener("click", () => {
+          const longMode = button.dataset.mode === "long";
+          const shortPanel = document.getElementById("short-theory");
+          const longPanel = document.getElementById("long-theory");
+          shortPanel.classList.toggle("hidden", longMode);
+          longPanel.classList.toggle("hidden", !longMode);
+          longPanel.classList.toggle("active-mode", longMode);
+          document.querySelectorAll("[data-mode]").forEach(tab => tab.setAttribute("aria-pressed", String(tab === button)));
+        });
+      });
+
+      const sessionPanels = [...document.querySelectorAll("[data-session]")];
+      const sessionNames = ["Giả định", "Thuế và chi phí biên", "Case study Hòa Phát", "Lựa chọn đầu vào", "Hộp Edgeworth"];
+      let activeStep = 0;
+      function showStep(step) {
+        activeStep = Math.max(0, Math.min(sessionPanels.length - 1, step));
+        sessionPanels.forEach((panel, index) => {
+          const active = index === activeStep;
+          panel.classList.toggle("is-active", active);
+          if (active) panel.classList.add("visible");
+        });
+        document.querySelectorAll(".step-tab").forEach(button => {
+          if (Number(button.dataset.step) === activeStep) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+        setText("step-current", `Bước ${activeStep + 1}: ${sessionNames[activeStep]}`);
+        document.getElementById("step-prev").disabled = activeStep === 0;
+        document.getElementById("step-next").textContent = activeStep === sessionPanels.length - 1 ? "Hoàn tất ✓" : "Tiếp →";
+        if (activeStep === sessionPanels.length - 1) document.getElementById("step-next").setAttribute("aria-label", "Bạn đang ở bước cuối");
+        else document.getElementById("step-next").removeAttribute("aria-label");
+      }
+      document.querySelectorAll(".step-tab").forEach(button => {
+        button.addEventListener("click", () => showStep(Number(button.dataset.step)));
+      });
+      document.getElementById("step-prev").addEventListener("click", () => showStep(activeStep - 1));
+      document.getElementById("step-next").addEventListener("click", () => {
+        if (activeStep < sessionPanels.length - 1) {
+          showStep(activeStep + 1);
+          document.getElementById("session-nav").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+
+      const revealObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .08 });
+      document.querySelectorAll(".reveal").forEach(section => revealObserver.observe(section));
+
+      document.querySelectorAll(".panel").forEach(card => {
+        card.addEventListener("pointermove", event => {
+          if (event.pointerType === "touch" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          const rect = card.getBoundingClientRect();
+          const x = (event.clientX - rect.left) / rect.width - .5;
+          const y = (event.clientY - rect.top) / rect.height - .5;
+          card.style.transform = `perspective(900px) rotateX(${y * -1.3}deg) rotateY(${x * 1.3}deg) translateY(-2px)`;
+        });
+        card.addEventListener("pointerleave", () => { card.style.transform = ""; });
+      });
+      update(0);
+      showStep(0);
+    })();
+  </script>
+</body>
+</html>
